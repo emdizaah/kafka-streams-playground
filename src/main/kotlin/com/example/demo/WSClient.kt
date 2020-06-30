@@ -5,30 +5,22 @@ import org.eclipse.jetty.websocket.client.WebSocketClient
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.stereotype.Component
 import java.net.URI
-import java.util.concurrent.TimeUnit
 
 @Component
-class WSClient : InitializingBean {
+class WSClient(private val secureClientSocket: SecureClientSocket) : InitializingBean {
 
     override fun afterPropertiesSet() {
         launch()
     }
 
     fun launch() {
-        var destUri = "wss://ws-feed-public.sandbox.pro.coinbase.com"
-
         val client = WebSocketClient()
-        val socket = SecureClientSocket()
         try {
             client.start()
-            val echoUri = URI(destUri)
-            val request = ClientUpgradeRequest()
-            client.connect(socket, echoUri, request)
-            System.out.printf("Connecting to : %s%n", echoUri)
+            val wsUri = URI("wss://ws-feed-public.sandbox.pro.coinbase.com")
+            client.connect(secureClientSocket, wsUri, ClientUpgradeRequest())
+            System.out.printf("Connecting to : %s%n", wsUri)
             while (true) { }
-
-            // wait for closed socket connection.
-            socket.awaitClose(5, TimeUnit.SECONDS)
         } catch (t: Throwable) {
             t.printStackTrace()
         } finally {

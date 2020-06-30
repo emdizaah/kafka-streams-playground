@@ -11,13 +11,11 @@ group = "com.example"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
-val ktor_version by extra("1.3.2")
-val kotlinx_coroutines_version by extra("1.3.4")
+val springKafkaVersion by extra("2.4.1.RELEASE")
+val kafkaVersion by extra("2.4.1")
 
 repositories {
 	mavenCentral()
-	jcenter()
-	maven { url = uri("https://dl.bintray.com/kotlin/ktor") }
 }
 
 
@@ -29,12 +27,12 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$kotlinx_coroutines_version")
+	implementation("org.springframework.kafka:spring-kafka:$springKafkaVersion")
+	implementation("org.apache.kafka:kafka-streams:$kafkaVersion")
+	implementation("org.apache.kafka:kafka-clients:$kafkaVersion")
 
-	implementation("io.ktor:ktor-client-websockets:$ktor_version")
-	implementation("io.ktor:ktor-client-cio:$ktor_version")
-	implementation("io.ktor:ktor-client-js:$ktor_version")
-	implementation("io.ktor:ktor-client-okhttp:$ktor_version")
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
