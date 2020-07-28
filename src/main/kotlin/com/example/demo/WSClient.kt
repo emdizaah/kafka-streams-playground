@@ -17,7 +17,7 @@ class WSClient(private val secureClientSocket: SecureClientSocket) : Initializin
         val client = WebSocketClient()
         try {
             client.start()
-            val wsUri = URI("wss://ws-feed-public.sandbox.pro.coinbase.com")
+            val wsUri = URI("wss://ws.kraken.com")
             client.connect(secureClientSocket, wsUri, ClientUpgradeRequest())
             System.out.printf("Connecting to : %s%n", wsUri)
             while (true) { }

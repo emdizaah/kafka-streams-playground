@@ -1,5 +1,7 @@
 package com.example.demo
 
+import com.example.demo.model.BookRecordUpdate
+import com.example.demo.parser.CryptoDataParser
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.WriteCallback
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose
@@ -16,7 +18,8 @@ import java.util.concurrent.TimeUnit
 @WebSocket(maxTextMessageSize = 64 * 1024)
 @Component
 class SecureClientSocket(
-    private val cryptoDataProducerTemplate: KafkaTemplate<String, String>
+    private val cryptoDataProducerTemplate: KafkaTemplate<String, BookRecordUpdate>,
+    private val cryproDataParser: CryptoDataParser
 ) {
 
     companion object {
@@ -45,19 +48,16 @@ class SecureClientSocket(
         try {
 
             val subscribeMessage = """{
-                "type": "subscribe",
-                "product_ids": [
-                    "BTC-USD"
-                ],
-                "channels": [
-                    "full",
-                    {
-                        "name": "ticker",
-                        "product_ids": [
-                            "BTC-USD"
-                        ]
-                    }
-                ]
+              "event": "subscribe",
+              "pair": [
+                "XBT/USD",
+                "ETH/USD",
+                "BCH/USD",
+                "XRP/USD"
+              ],
+              "subscription": {
+                "name": "book"
+              }
             }"""
 
             session.remote.sendString(subscribeMessage, object : WriteCallback {
@@ -76,7 +76,9 @@ class SecureClientSocket(
 
     @OnWebSocketMessage
     fun onMessage(msg: String) {
-        cryptoDataProducerTemplate.send("crypto", msg).addCallback({
+        if (!msg.startsWith("[")) return
+        val bookEvent = cryproDataParser.parseToBookEvent(msg) ?: return
+        cryptoDataProducerTemplate.send("crypto", bookEvent).addCallback({
             logger.debug("Submitted successfully:\n$msg")
         }, {
             logger.error("Failed to submit")
