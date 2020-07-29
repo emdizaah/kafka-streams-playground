@@ -1,7 +1,7 @@
-package com.example.demo
+package io.inventi.tech.streams.ingest
 
-import com.example.demo.model.BookRecordUpdate
-import com.example.demo.parser.CryptoDataParser
+import io.inventi.tech.streams.model.BookRecordUpdate
+import io.inventi.tech.streams.parser.CryptoDataParser
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.WriteCallback
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose

@@ -1,6 +1,6 @@
-package com.example.demo.config
+package io.inventi.tech.streams.config
 
-import com.example.demo.model.BookRecordUpdate
+import io.inventi.tech.streams.model.BookRecordUpdate
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature

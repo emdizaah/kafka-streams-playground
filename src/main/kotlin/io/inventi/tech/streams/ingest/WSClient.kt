@@ -1,5 +1,6 @@
-package com.example.demo
+package io.inventi.tech.streams.ingest
 
+import io.inventi.tech.streams.ingest.SecureClientSocket
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest
 import org.eclipse.jetty.websocket.client.WebSocketClient
 import org.springframework.beans.factory.InitializingBean

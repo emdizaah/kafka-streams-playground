@@ -1,6 +1,6 @@
-package com.example.demo.parser
+package io.inventi.tech.streams.parser
 
-import com.example.demo.model.BookRecordUpdate
+import io.inventi.tech.streams.model.BookRecordUpdate
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 

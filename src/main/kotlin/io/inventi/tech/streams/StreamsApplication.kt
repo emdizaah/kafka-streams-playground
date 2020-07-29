@@ -1,6 +1,6 @@
-package com.example.demo
+package io.inventi.tech.streams
 
-import com.example.demo.model.BookRecordUpdate
+import io.inventi.tech.streams.model.BookRecordUpdate
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams

@@ -1,4 +1,4 @@
-package com.example.demo.model
+package io.inventi.tech.streams.model
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.math.BigDecimal
