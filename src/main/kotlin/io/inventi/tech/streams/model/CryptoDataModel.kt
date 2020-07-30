@@ -35,7 +35,7 @@ data class BookRecordUpdateIncoming(
 data class BookRecordUpdate(
     val channelId: Int,
     val ask: List<Book>?,
-    val buy: List<Book>?,
+    val bid: List<Book>?,
     val channelName: String,
     val pair: String
 
@@ -48,18 +48,6 @@ data class BookRecordUpdate(
         val updateType: String? = null
     )
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class BookTypeAsk(
-        val a: List<Book>?,
-        val c: String? = null
-    )
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    data class BookTypeBuy(
-        val b: List<Book>?,
-        val c: String? = null
-    )
-
 }
 
 fun fromIncoming(incoming: BookRecordUpdateIncoming): BookRecordUpdate {
@@ -68,6 +56,6 @@ fun fromIncoming(incoming: BookRecordUpdateIncoming): BookRecordUpdate {
         pair = incoming.pair,
         channelName = incoming.channelName,
         ask = incoming.ask?.a?.map { BookRecordUpdate.Book(price = it.price, volume = it.volume, timestamp = it.timestamp, updateType = it.updateType) },
-        buy = incoming.buy?.b?.map { BookRecordUpdate.Book(price = it.price, volume = it.volume, timestamp = it.timestamp, updateType = it.updateType) }
+        bid = incoming.buy?.b?.map { BookRecordUpdate.Book(price = it.price, volume = it.volume, timestamp = it.timestamp, updateType = it.updateType) }
     )
 }
