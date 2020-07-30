@@ -2,15 +2,10 @@ package io.inventi.tech.streams
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.inventi.tech.streams.model.BookRecordUpdate
-import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.errors.RecordTooLargeException
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
-import org.apache.kafka.streams.errors.ProductionExceptionHandler
-import org.apache.kafka.streams.errors.ProductionExceptionHandler.ProductionExceptionHandlerResponse
 import org.apache.kafka.streams.kstream.Consumed
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.kafka.support.serializer.JsonDeserializer
@@ -34,15 +29,15 @@ class StreamsApplication(private val kafkaObjectMapper: ObjectMapper) : Initiali
 
         val streamsBuilder = StreamsBuilder()
 
+        val consumedWith = Consumed.with(
+            Serdes.String(),
+            Serdes.serdeFrom(
+                JsonSerializer<BookRecordUpdate>(kafkaObjectMapper),
+                JsonDeserializer<BookRecordUpdate>(kafkaObjectMapper)
+                    .apply { addTrustedPackages("*") }))
+
         val cryptoStream = streamsBuilder
-            .stream<String, BookRecordUpdate>(
-                "crypto",
-                Consumed.with(
-                    Serdes.String(),
-                    Serdes.serdeFrom(
-                        JsonSerializer<BookRecordUpdate>(kafkaObjectMapper),
-                        JsonDeserializer<BookRecordUpdate>(kafkaObjectMapper)
-                            .apply { addTrustedPackages("*") })))
+            .stream<String, BookRecordUpdate>("crypto", consumedWith)
 
         val kafkaStreams = KafkaStreams(streamsBuilder.build(), props)
 
