@@ -1,13 +1,17 @@
 package io.inventi.tech.streams
 
-import io.inventi.tech.streams.model.BookRecordUpdate
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.inventi.tech.streams.model.BookRecordUpdate
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.errors.RecordTooLargeException
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
+import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
+import org.apache.kafka.streams.errors.ProductionExceptionHandler
+import org.apache.kafka.streams.errors.ProductionExceptionHandler.ProductionExceptionHandlerResponse
 import org.apache.kafka.streams.kstream.Consumed
-import org.apache.kafka.streams.kstream.Predicate
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
@@ -25,8 +29,7 @@ class StreamsApplication(private val kafkaObjectMapper: ObjectMapper) : Initiali
 
         val props = mapOf(
             StreamsConfig.APPLICATION_ID_CONFIG to "stream-app",
-            StreamsConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:9092",
-            JsonDeserializer.TRUSTED_PACKAGES to "*"
+            StreamsConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:9092"
         ).toProperties()
 
         val streamsBuilder = StreamsBuilder()

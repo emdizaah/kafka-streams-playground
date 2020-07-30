@@ -1,6 +1,9 @@
 package io.inventi.tech.streams.ingest
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.inventi.tech.streams.model.BookRecordUpdate
+import io.inventi.tech.streams.model.BookRecordUpdateIncoming
+import io.inventi.tech.streams.model.fromIncoming
 import io.inventi.tech.streams.parser.CryptoDataParser
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.WriteCallback
@@ -19,7 +22,8 @@ import java.util.concurrent.TimeUnit
 @Component
 class SecureClientSocket(
     private val cryptoDataProducerTemplate: KafkaTemplate<String, BookRecordUpdate>,
-    private val cryproDataParser: CryptoDataParser
+    private val cryproDataParser: CryptoDataParser,
+    private val kafkaObjectMapper: ObjectMapper
 ) {
 
     companion object {
@@ -77,8 +81,8 @@ class SecureClientSocket(
     @OnWebSocketMessage
     fun onMessage(msg: String) {
         if (!msg.startsWith("[")) return
-        val bookEvent = cryproDataParser.parseToBookEvent(msg) ?: return
-        cryptoDataProducerTemplate.send("crypto", bookEvent).addCallback({
+        val bookRecordUpdateIncoming = cryproDataParser.parseToBookEvent(msg) ?: return
+        cryptoDataProducerTemplate.send("crypto", fromIncoming(bookRecordUpdateIncoming)).addCallback({
             logger.debug("Submitted successfully:\n$msg")
         }, {
             logger.error("Failed to submit")
