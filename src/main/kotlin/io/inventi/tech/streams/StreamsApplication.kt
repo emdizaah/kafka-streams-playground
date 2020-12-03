@@ -7,10 +7,12 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Consumed
+import org.apache.kafka.streams.kstream.Predicate
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.kafka.support.serializer.JsonDeserializer
 import org.springframework.kafka.support.serializer.JsonSerializer
 import org.springframework.stereotype.Component
+import java.math.BigDecimal
 
 
 @Component

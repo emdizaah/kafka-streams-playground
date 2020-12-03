@@ -1,6 +1,5 @@
-package io.inventi.tech.streams.ingest
+package io.inventi.tech.streams.ingest.exchanges.bitfinex
 
-import io.inventi.tech.streams.ingest.SecureClientSocket
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest
 import org.eclipse.jetty.websocket.client.WebSocketClient
 import org.springframework.beans.factory.InitializingBean
@@ -8,18 +7,18 @@ import org.springframework.stereotype.Component
 import java.net.URI
 
 @Component
-class WSClient(private val secureClientSocket: SecureClientSocket) : InitializingBean {
+class BitfinexWSClient(private val bitfinexSecureClientSocket: BitfinexSecureClientSocket) : InitializingBean {
 
     override fun afterPropertiesSet() {
-        launch()
+//        launch()
     }
 
     fun launch() {
         val client = WebSocketClient()
         try {
             client.start()
-            val wsUri = URI("wss://ws.kraken.com")
-            client.connect(secureClientSocket, wsUri, ClientUpgradeRequest())
+            val wsUri = URI("wss://api-pub.bitfinex.com/ws/2")
+            client.connect(bitfinexSecureClientSocket, wsUri, ClientUpgradeRequest())
             System.out.printf("Connecting to : %s%n", wsUri)
             while (true) { }
         } catch (t: Throwable) {

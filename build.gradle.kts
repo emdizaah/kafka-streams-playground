@@ -23,7 +23,12 @@ dependencies {
 
 	implementation("org.eclipse.jetty.websocket:websocket-client:9.4.30.v20200611")
 
-	implementation("org.springframework.boot:spring-boot-starter")
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+	implementation("org.springframework.boot:spring-boot-starter-websocket:2.4.0")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 

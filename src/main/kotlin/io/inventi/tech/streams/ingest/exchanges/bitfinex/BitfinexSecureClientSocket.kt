@@ -1,10 +1,11 @@
-package io.inventi.tech.streams.ingest
+package io.inventi.tech.streams.ingest.exchanges.bitfinex
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.inventi.tech.streams.ingest.exchanges.bitfinex.model.BitfinexTickerSubscribeRequest
+import io.inventi.tech.streams.ingest.exchanges.bitfinex.model.BitfinexTickerSubscribeRequest.Companion.btcusd
 import io.inventi.tech.streams.model.BookRecordUpdate
-import io.inventi.tech.streams.model.BookRecordUpdateIncoming
 import io.inventi.tech.streams.model.fromIncoming
-import io.inventi.tech.streams.parser.CryptoDataParser
+import io.inventi.tech.streams.ingest.exchanges.kraken.parser.KrakenMessageParser
 import org.eclipse.jetty.websocket.api.Session
 import org.eclipse.jetty.websocket.api.WriteCallback
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose
@@ -20,14 +21,14 @@ import java.util.concurrent.TimeUnit
 
 @WebSocket(maxTextMessageSize = 64 * 1024)
 @Component
-class SecureClientSocket(
-    private val cryptoDataProducerTemplate: KafkaTemplate<String, BookRecordUpdate>,
-    private val cryproDataParser: CryptoDataParser,
-    private val kafkaObjectMapper: ObjectMapper
+class BitfinexSecureClientSocket(
+        private val cryptoDataProducerTemplate: KafkaTemplate<String, BookRecordUpdate>,
+        private val cryproDataParser: KrakenMessageParser,
+        private val kafkaObjectMapper: ObjectMapper
 ) {
 
     companion object {
-        val logger = LoggerFactory.getLogger(SecureClientSocket::class.java)
+        val logger = LoggerFactory.getLogger(BitfinexSecureClientSocket::class.java)
     }
 
     private val closeLatch: CountDownLatch
@@ -50,21 +51,7 @@ class SecureClientSocket(
         logger.info("Got connect: %s%n", session)
         this.session = session
         try {
-
-            val subscribeMessage = """{
-              "event": "subscribe",
-              "pair": [
-                "XBT/USD",
-                "ETH/USD",
-                "BCH/USD",
-                "XRP/USD"
-              ],
-              "subscription": {
-                "name": "book"
-              }
-            }"""
-
-            session.remote.sendString(subscribeMessage, object : WriteCallback {
+            session.remote.sendString(subscribeTicker(btcusd()), object : WriteCallback {
                 override fun writeSuccess() {
                     logger.info("Successfully subscribed to wss feed")
                 }
@@ -80,6 +67,7 @@ class SecureClientSocket(
 
     @OnWebSocketMessage
     fun onMessage(msg: String) {
+        println("MESSAGE: $msg")
         if (!msg.startsWith("[")) return
         val bookRecordUpdateIncoming = cryproDataParser.parseToBookEvent(msg) ?: return
         cryptoDataProducerTemplate.send("crypto", fromIncoming(bookRecordUpdateIncoming)).addCallback({
@@ -97,5 +85,9 @@ class SecureClientSocket(
 
     init {
         closeLatch = CountDownLatch(1000)
+    }
+
+    private fun subscribeTicker(subscribeRequestBitfinex: BitfinexTickerSubscribeRequest): String {
+        return kafkaObjectMapper.writeValueAsString(subscribeRequestBitfinex)
     }
 }
