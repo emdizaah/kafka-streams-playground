@@ -11,8 +11,8 @@ group = "io.inventi.tech.streams"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
-val springKafkaVersion by extra("2.4.1.RELEASE")
-val kafkaVersion by extra("2.4.1")
+val springKafkaVersion by extra("2.5.5.RELEASE")
+val kafkaVersion by extra("2.5.5")
 
 repositories {
 	mavenCentral()

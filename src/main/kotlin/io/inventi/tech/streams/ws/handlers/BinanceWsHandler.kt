@@ -1,10 +1,9 @@
 package io.inventi.tech.streams.ws.handlers
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.inventi.tech.streams.ingest.exchanges.binance.model.BinanceTickerSubscribeRequest
+import io.inventi.tech.streams.ingest.exchanges.binance.parser.BinanceMessageParser
 import io.inventi.tech.streams.ingest.exchanges.bitfinex.model.BitfinexTickerSubscribeRequest
-import io.inventi.tech.streams.ingest.exchanges.kraken.model.KrakenTickerSubscribeRequest
-import io.inventi.tech.streams.ingest.exchanges.kraken.model.KrakenTickerSubscribeRequest.Companion.btcusd
-import io.inventi.tech.streams.ingest.exchanges.kraken.parser.KrakenMessageParser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -14,28 +13,38 @@ import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.TextWebSocketHandler
 
 @Component
-class KrakenWsHandler(
+class BinanceWsHandler(
     private val kafkaObjectMapper: ObjectMapper,
-    private val krakenMessageParser: KrakenMessageParser
+    private val binanceMessageParser: BinanceMessageParser
 ) : TextWebSocketHandler() {
 
     companion object {
-        val logger: Logger = LoggerFactory.getLogger(KrakenWsHandler::class.java)
-        const val EXCHANGE = "KRAKEN"
+        val logger: Logger = LoggerFactory.getLogger(BinanceWsHandler::class.java)
+        const val EXCHANGE = "BINANCE"
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.info("Connection to $EXCHANGE established successfully!")
-        session.sendMessage(TextMessage(subscribeTicker(btcusd())))
+//        session.sendMessage(TextMessage(subscribeTicker(BinanceTickerSubscribeRequest.btcusd())))
+        session.sendMessage(TextMessage("""{
+"method": "SUBSCRIBE",
+"params":
+[
+"btcusdt@aggTrade",
+"btcusdt@depth"
+],
+"id": 1
+}"""))
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         logger.trace("Received message from $EXCHANGE")
         logger.trace(message.payload)
-        krakenMessageParser.parseToTicker(message.payload)?.let {
+        binanceMessageParser.parseToTicker(message.payload)?.let {
             logger.info("Received ticker from $EXCHANGE")
             logger.info(it.toString())
         }
+
     }
 
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
@@ -46,7 +55,7 @@ class KrakenWsHandler(
         logger.warn("Connection to $EXCHANGE was closed")
     }
 
-    private fun subscribeTicker(subscribeRequestKraken: KrakenTickerSubscribeRequest): String {
-        return kafkaObjectMapper.writeValueAsString(subscribeRequestKraken)
+    private fun subscribeTicker(subscribeRequest: BinanceTickerSubscribeRequest): String {
+        return kafkaObjectMapper.writeValueAsString(subscribeRequest)
     }
 }
