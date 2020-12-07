@@ -12,6 +12,7 @@ import Volume
 import VolumeWeightedAveragePrice
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.inventi.tech.streams.ingest.exchanges.kraken.model.ChannelSubscriptionSuccessMessage
 import io.inventi.tech.streams.ingest.exchanges.kraken.model.HeartBeat
 import io.inventi.tech.streams.ingest.exchanges.kraken.model.SubscriptionSuccessMessage
 import org.slf4j.Logger
@@ -32,7 +33,7 @@ class KrakenMessageParser(private val kafkaObjectMapper: ObjectMapper) {
          try {
 
              val jsonNode = kafkaObjectMapper.readTree(v)
-             if (jsonNode.isSubscriptionSuccessMessage(kafkaObjectMapper) || jsonNode.isHeartbeatMessage(kafkaObjectMapper)) {
+             if (isChannelSubscriptionSuccess(v) || jsonNode.isSubscriptionSuccessMessage(kafkaObjectMapper)  || jsonNode.isHeartbeatMessage(kafkaObjectMapper)) {
                  logger.debug("Not a ticker message: $v")
                  return null
              }
@@ -80,6 +81,15 @@ class KrakenMessageParser(private val kafkaObjectMapper: ObjectMapper) {
     fun <T> extractFromNode(tickerNode: JsonNode, nodeValue: String, block: (JsonNode) -> T): T {
         return tickerNode.findValue(nodeValue)?.let(block)
                 ?: run { throw RuntimeException("unable to get value for $nodeValue") }
+    }
+
+    private fun isChannelSubscriptionSuccess(v: String): Boolean {
+        return try {
+            kafkaObjectMapper.readValue(v, ChannelSubscriptionSuccessMessage::class.java)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
 

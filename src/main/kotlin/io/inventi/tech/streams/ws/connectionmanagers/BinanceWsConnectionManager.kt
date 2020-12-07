@@ -13,8 +13,14 @@ class BinanceWsConnectionManager(private val binanceWsHandler: BinanceWsHandler)
     }
 
     override fun afterPropertiesSet() {
+
         println("connecting to $EXCHANGE...")
-        val webSocketConnectionManager = WebSocketConnectionManager(StandardWebSocketClient(), binanceWsHandler, "wss://stream.binance.com:9443")
+        val webSocketConnectionManager = WebSocketConnectionManager(
+            StandardWebSocketClient(),
+            binanceWsHandler,
+            "wss://fstream.binance.com/ws/stream?streams=btcusd@ticker"
+        )
+
         webSocketConnectionManager.start()
     }
 }
