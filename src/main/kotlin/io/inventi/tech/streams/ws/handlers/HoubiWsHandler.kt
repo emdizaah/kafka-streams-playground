@@ -12,7 +12,6 @@ import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketSession
 import org.springframework.web.socket.handler.BinaryWebSocketHandler
-import org.springframework.web.socket.handler.TextWebSocketHandler
 import java.io.ByteArrayInputStream
 import java.util.zip.GZIPInputStream
 
@@ -23,7 +22,7 @@ class HoubiWsHandler(
 ) : BinaryWebSocketHandler() {
 
     companion object {
-        val logger: Logger = LoggerFactory.getLogger(BitfinexWsHandler::class.java)
+        val logger: Logger = LoggerFactory.getLogger(HoubiWsHandler::class.java)
         const val EXCHANGE = "HUOBI"
     }
 
@@ -37,7 +36,7 @@ class HoubiWsHandler(
         val bytes = ByteArray(message.payload.remaining())
         payload.get(bytes)
         val message = GZIPInputStream(ByteArrayInputStream(bytes)).bufferedReader().use { it.readText() }
-        logger.info("$message")
+        logger.info(message)
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
