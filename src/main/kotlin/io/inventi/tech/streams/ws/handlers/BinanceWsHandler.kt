@@ -39,7 +39,7 @@ class BinanceWsHandler(
         binanceMessageParser.parseToTicker(
             message.payload
         )?.let {
-            logger.info("Received ticker from $EXCHANGE")
+            logger.debug("Received ticker from $EXCHANGE")
             logger.info(it.toString())
         }
 

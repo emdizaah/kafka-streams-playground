@@ -31,7 +31,7 @@ class BitfinexWsHandler(
         logger.trace("Received message from $EXCHANGE")
         logger.trace(message.payload)
         bitfinexMessageParser.parseToTicker(message.payload)?. let {
-            logger.info("Received ticker from $EXCHANGE")
+            logger.debug("Received ticker from $EXCHANGE")
             logger.info(it.toString())
         }
 

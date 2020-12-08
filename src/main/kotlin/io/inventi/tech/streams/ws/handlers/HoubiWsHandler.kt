@@ -3,6 +3,8 @@ package io.inventi.tech.streams.ws.handlers
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.inventi.tech.streams.ingest.exchanges.huobi.model.HuobiTickerSubscribeRequest
 import io.inventi.tech.streams.ingest.exchanges.huobi.model.HuobiTickerSubscribeRequest.Companion.btcusd
+import io.inventi.tech.streams.ingest.exchanges.huobi.model.PingMessage
+import io.inventi.tech.streams.ingest.exchanges.huobi.model.PongMessage
 import io.inventi.tech.streams.ingest.exchanges.huobi.parser.HuobiMessageParser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -32,11 +34,37 @@ class HoubiWsHandler(
     }
 
     override fun handleBinaryMessage(session: WebSocketSession, message: BinaryMessage) {
+        val stringMessage = parseToString(message)
+        parseToPingMessage(stringMessage) ?.let {
+            sendPong(session, it)
+        } ?: run {
+
+            huobiMessageParser.parseToTicker(stringMessage) ?. let {
+                logger.debug("Received ticker from $EXCHANGE")
+                logger.info(it.toString())
+            }
+        }
+
+    }
+
+    private fun parseToPingMessage(message: String): PingMessage? {
+        return try {
+            kafkaObjectMapper.readValue(message, PingMessage::class.java)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun sendPong(session: WebSocketSession, pingMessage: PingMessage) {
+        session.sendMessage(TextMessage(kafkaObjectMapper.writeValueAsString(PongMessage(pong = pingMessage.ping))))
+    }
+
+    private fun parseToString(message: BinaryMessage): String {
         val payload = message.payload
         val bytes = ByteArray(message.payload.remaining())
         payload.get(bytes)
         val message = GZIPInputStream(ByteArrayInputStream(bytes)).bufferedReader().use { it.readText() }
-        logger.info(message)
+        return message
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {

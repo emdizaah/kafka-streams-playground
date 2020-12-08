@@ -17,5 +17,6 @@ data class Ticker(
     val id: Long,
     val count: Long,
     val low: BigDecimal,
-    @JsonProperty("volume") val volume: BigDecimal
+    val version: Long,
+    @JsonProperty("vol") val volume: BigDecimal
 )
