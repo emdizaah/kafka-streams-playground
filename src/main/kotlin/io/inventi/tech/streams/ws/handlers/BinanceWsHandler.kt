@@ -22,27 +22,13 @@ class BinanceWsHandler(
     }
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
-
-        logger.info("Connection to $EXCHANGE established successfully!")
-        session.sendMessage(
-            TextMessage(subscribeTicker(btcusd()))
-        )
+        logger.debug("Connection to $EXCHANGE established successfully!")
+        subscribeToTicker(session)
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        logger.debug("Received message from $EXCHANGE")
-        logger.debug(message.payload)
-        if (message.payload.toLowerCase() == "ping") {
-            logger.info("ping from $EXCHANGE")
-            session.sendMessage(PongMessage())
-        }
-        binanceMessageParser.parseToTicker(
-            message.payload
-        )?.let {
-            logger.debug("Received ticker from $EXCHANGE")
-            logger.info(it.toString())
-        }
-
+        logger.debug("Got message from $EXCHANGE: ${message.payload}")
+        handleTextMessage(message, session)
     }
 
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
@@ -53,7 +39,23 @@ class BinanceWsHandler(
         logger.warn("Connection to $EXCHANGE was closed")
     }
 
-    private fun subscribeTicker(subscribeRequest: BinanceTickerSubscriptionMessage): String {
-        return kafkaObjectMapper.writeValueAsString(subscribeRequest)
+    private fun handleTextMessage(message: TextMessage, session: WebSocketSession) {
+
+        binanceMessageParser.parseToTicker(
+            message.payload
+        )?.let {
+            logger.debug("Received ticker from $EXCHANGE")
+            logger.info(it.toString())
+        } ?: run {
+            if (message.payload.toLowerCase() == "ping") {
+                logger.info("ping from $EXCHANGE")
+                session.sendMessage(PongMessage())
+            }
+        }
+    }
+
+
+    private fun subscribeToTicker(session: WebSocketSession) {
+        session.sendMessage(TextMessage(kafkaObjectMapper.writeValueAsString(btcusd())))
     }
 }

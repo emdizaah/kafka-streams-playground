@@ -25,17 +25,14 @@ class BitfinexWsHandler(
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.info("Connection to $EXCHANGE established successfully!")
-        session.sendMessage(TextMessage(subscribeTicker(btcusd())))
+        subscribeToTicker(session)
     }
-    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        logger.trace("Received message from $EXCHANGE")
-        logger.trace(message.payload)
-        bitfinexMessageParser.parseToTicker(message.payload)?. let {
-            logger.debug("Received ticker from $EXCHANGE")
-            logger.info(it.toString())
-        }
 
+    override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
+        logger.debug("Got message from $EXCHANGE: ${message.payload}")
+        handleTextMessage(message)
     }
+
 
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
         logger.error("Failed to read message from $EXCHANGE", exception)
@@ -45,7 +42,14 @@ class BitfinexWsHandler(
         logger.warn("Connection to $EXCHANGE was closed")
     }
 
-    private fun subscribeTicker(subscribeRequestBitfinex: BitfinexTickerSubscribeRequest): String {
-        return kafkaObjectMapper.writeValueAsString(subscribeRequestBitfinex)
+    private fun subscribeToTicker(session: WebSocketSession) {
+        session.sendMessage(TextMessage(kafkaObjectMapper.writeValueAsString(btcusd())))
+    }
+
+    private fun handleTextMessage(message: TextMessage) {
+        bitfinexMessageParser.parseToTicker(message.payload)?.let {
+            logger.debug("Received ticker from $EXCHANGE")
+            logger.info(it.toString())
+        }
     }
 }

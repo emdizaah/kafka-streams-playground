@@ -2,6 +2,7 @@ package io.inventi.tech.streams.ws.handlers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.inventi.tech.streams.ingest.exchanges.coinbasepro.model.CoinbaseProSubscribeRequest
+import io.inventi.tech.streams.ingest.exchanges.coinbasepro.model.CoinbaseProSubscribeRequest.Companion.btcusd
 import io.inventi.tech.streams.ingest.exchanges.coinbasepro.parser.CoinbaseProMessageParser
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -24,16 +25,12 @@ class CoinbaseProWsHandler(
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.info("Connection to $EXCHANGE established successfully!")
-        session.sendMessage(TextMessage(subscribeTicker(CoinbaseProSubscribeRequest.btcusd())))
+        subscribeToTicker(session)
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
-        logger.trace("Received message from $EXCHANGE")
-        logger.trace(message.payload)
-        coinbaseProMessageParser.parseToTicker(message.payload) ?.let  {
-            logger.debug("Received ticker from $EXCHANGE")
-            logger.info(it.toString())
-        }
+        logger.debug("Got message from $EXCHANGE: ${message.payload}")
+        handleTextMessage(message)
     }
 
     override fun handleTransportError(session: WebSocketSession, exception: Throwable) {
@@ -44,8 +41,14 @@ class CoinbaseProWsHandler(
         logger.warn("Connection to $EXCHANGE was closed")
     }
 
+    private fun handleTextMessage(message: TextMessage) {
+        coinbaseProMessageParser.parseToTicker(message.payload)?.let {
+            logger.debug("Received ticker from $EXCHANGE")
+            logger.info(it.toString())
+        }
+    }
 
-    private fun subscribeTicker(subscribeRequest: CoinbaseProSubscribeRequest): String {
-        return kafkaObjectMapper.writeValueAsString(subscribeRequest)
+    private fun subscribeToTicker(session: WebSocketSession) {
+        session.sendMessage(TextMessage(kafkaObjectMapper.writeValueAsString(btcusd())))
     }
 }
